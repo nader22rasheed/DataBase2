@@ -1,0 +1,224 @@
+ الخطوة1  : تنصيب برنامج ssms2019 
+
+ الخطوة 2 : تسجيل كحساب local 
+ 
+الخطوة 3 :   بعد ما نفوت عالبرنامج ك  local   
+
+new query  عالroot  
+
+وبعدها مننسخ الكود اللي بعتو عالgit  
+(
+ ملاحظة هامة 
+فينا نعمل شي بديل عن الانشاء 
+الللي هوي 
+file-> open file -> database2-query 
+ للسهولة 
+ بس هالشي لنفهم اكتر شو اللي انعمل 
+)
+
+ منعمل  execute  اول الشي ل تاكد من وجود  ال database مسبقا ام لا وحذفه في حال وجوده 
+|
+* 
+(
+IF DB_ID(N'HW_RequestDB') IS NOT NULL
+BEGIN
+    ALTER DATABASE HW_RequestDB SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE HW_RequestDB;
+END
+GO
+)
+ هاد شرط للمشروع 
+اذا انشاتو من قبل يحذفو 
+
+CREATE DATABASE HW_RequestDB
+ON PRIMARY 
+(
+    NAME = N'HW_main', 
+    FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\DATA\HW_main.mdf',
+    SIZE = 200MB, 
+    FILEGROWTH = 20MB
+),
+(
+    NAME = N'HW_file1', 
+    FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\DATA\HW_file1.ndf',
+    SIZE = 100MB, 
+    FILEGROWTH = 20MB
+),
+(
+    NAME = N'HW_file2', 
+    FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\DATA\HW_file2.ndf',
+    SIZE = 100MB, 
+    FILEGROWTH = 20MB
+),
+FILEGROUP [HW_FileGroup] 
+(
+    NAME = N'HW_file3',
+    FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\DATA\HW_file3.ndf',
+    SIZE = 100MB,
+    FILEGROWTH = 20MB
+),
+(
+    NAME = N'HW_file4',
+    FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\DATA\HW_file4.ndf',
+    SIZE = 100MB,
+    FILEGROWTH = 20MB
+)
+LOG ON
+(
+    NAME = N'HW_log1',
+    FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\Log\HW_log1.ldf',
+    SIZE = 100MB,
+    FILEGROWTH = 50MB
+),
+(
+    NAME = N'HW_log2',
+    FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\Log\HW_log2.ldf',
+    SIZE = 100MB,
+    FILEGROWTH = 50MB
+);
+GO
+
+وهدول  هنن الانشاء عند ال data  وعند ال log 
+
+ ملاحظة مهمة : شوف المسار اللي عندك وين نازل ال sql server   وحطو بدل الpath   اللي انا حاطو ليشتغل معك 
+لانو نحنا عم نشتغل  ك محلي 
+
+ منعمل  execute  لكل شي حاطو من الانشائ مع بعضو مو ل شي لحال ل يشتغل كامل صح 
+
+ وهيك الطلب الاول والتاني خالص 
+
+
+-- -------------------------
+-- 2) Use the newly created database
+-- -------------------------
+USE HW_RequestDB;
+GO
+
+-- -------------------------
+-- 3) Tables & relationships (ERD) — core data model
+-- -------------------------
+-- [REQ 1] ERD: The following tables constitute the ER model described in the project:
+--         Organization, Administration, Department, Employee, RequestStatus, Request,
+--         RequestHistory, RequestAttachment
+-- [REQ 3.a] Place large/content table 'Request' on HW_FileGroup
+-- [REQ 3.b] Define PKs and FK relationships explicitly for referential integrity
+
+-- Organization table (top-level entity)
+-- [REQ 1] [REQ 3.b]
+CREATE TABLE Organization (
+  OrgID      INT IDENTITY(1,1) PRIMARY KEY,   -- [REQ 3.b] primary key
+  Name       NVARCHAR(200) NOT NULL,
+  Address    NVARCHAR(500) NULL,
+  CreatedAt  DATETIME2 DEFAULT SYSUTCDATETIME()
+) ON [PRIMARY];
+GO
+
+-- Administration belongs to an Organization
+-- [REQ 1] [REQ 3.b]
+CREATE TABLE Administration (
+  AdminID   INT IDENTITY(1,1) PRIMARY KEY,    -- [REQ 3.b]
+  OrgID     INT NOT NULL,                     -- [REQ 3.b] FK column
+  Name      NVARCHAR(200) NOT NULL,
+  Description NVARCHAR(400) NULL,
+  CONSTRAINT FK_Administration_Organization FOREIGN KEY (OrgID) REFERENCES Organization(OrgID)  -- [REQ 3.b] foreign key
+) ON [PRIMARY];
+GO
+
+-- Department belongs to an Administration
+-- [REQ 1] [REQ 3.b]
+CREATE TABLE Department (
+  DeptID   INT IDENTITY(1,1) PRIMARY KEY,     -- [REQ 3.b]
+  AdminID  INT NOT NULL,                      -- [REQ 3.b] FK column
+  Name     NVARCHAR(200) NOT NULL,
+  CONSTRAINT FK_Department_Administration FOREIGN KEY (AdminID) REFERENCES Administration(AdminID) -- [REQ 3.b]
+) ON [PRIMARY];
+GO
+
+-- Employee belongs to a Department
+-- [REQ 1] [REQ 3.b]
+CREATE TABLE Employee (
+  EmpID       INT IDENTITY(1,1) PRIMARY KEY,  -- [REQ 3.b]
+  DeptID      INT NOT NULL,                   -- [REQ 3.b] FK column
+  EmpCode     NVARCHAR(50) UNIQUE NULL,
+  FullName    NVARCHAR(250) NOT NULL,
+  Email       NVARCHAR(200) NULL,
+  IsReviewer  BIT DEFAULT 0,
+  CreatedAt   DATETIME2 DEFAULT SYSUTCDATETIME(),
+  CONSTRAINT FK_Employee_Department FOREIGN KEY (DeptID) REFERENCES Department(DeptID) -- [REQ 3.b]
+) ON [PRIMARY];
+GO
+
+-- RequestStatus lookup table (part of ERD)
+-- [REQ 1] [REQ 3.b]
+CREATE TABLE RequestStatus (
+  StatusID INT PRIMARY KEY,                   -- [REQ 3.b] explicit PK
+  StatusName NVARCHAR(100) NOT NULL
+) ON [PRIMARY];
+GO
+
+-- Main Request table: placed on the dedicated filegroup for heavy data
+-- [REQ 1] [REQ 3.a] [REQ 3.b]
+CREATE TABLE [Request] (
+  RequestID     INT IDENTITY(1,1) PRIMARY KEY,  -- [REQ 3.b]
+  CreatorEmpID  INT NOT NULL,                   -- [REQ 3.b] FK to Employee
+  DeptID        INT NOT NULL,                   -- [REQ 3.b] FK to Department
+  Title         NVARCHAR(250) NOT NULL,
+  Description   NVARCHAR(MAX) NULL,             -- potentially large -> justify filegroup placement
+  CurrentStatus INT NOT NULL,                   -- [REQ 3.b] FK to RequestStatus
+  IsPaper       BIT DEFAULT 0,
+  CreatedAt     DATETIME2 DEFAULT SYSUTCDATETIME(),
+  LastUpdatedAt DATETIME2 NULL,
+  CONSTRAINT FK_Request_Creator FOREIGN KEY (CreatorEmpID) REFERENCES Employee(EmpID),   -- [REQ 3.b]
+  CONSTRAINT FK_Request_Dept FOREIGN KEY (DeptID) REFERENCES Department(DeptID),        -- [REQ 3.b]
+  CONSTRAINT FK_Request_Status FOREIGN KEY (CurrentStatus) REFERENCES RequestStatus(StatusID) -- [REQ 3.b]
+) ON [HW_FileGroup];  -- [REQ 3.a] explicitly place Request on HW_FileGroup
+GO
+
+
+-- [REQ 1] [REQ 3.b]
+CREATE TABLE RequestHistory (
+  HistoryID    INT IDENTITY(1,1) PRIMARY KEY,   -- [REQ 3.b]
+  RequestID    INT NOT NULL,                    -- [REQ 3.b] FK to Request
+  FromEmpID    INT NULL,                        -- optional FK to Employee
+  ToEmpID      INT NULL,                        -- optional FK to Employee
+  Action       NVARCHAR(100) NOT NULL,
+  Comment      NVARCHAR(MAX) NULL,
+  ActionDate   DATETIME2 DEFAULT SYSUTCDATETIME(),
+  CONSTRAINT FK_RequestHistory_Request FOREIGN KEY (RequestID) REFERENCES [Request](RequestID), -- [REQ 3.b]
+  CONSTRAINT FK_RequestHistory_FromEmp FOREIGN KEY (FromEmpID) REFERENCES Employee(EmpID),      -- [REQ 3.b]
+  CONSTRAINT FK_RequestHistory_ToEmp FOREIGN KEY (ToEmpID) REFERENCES Employee(EmpID)           -- [REQ 3.b]
+) ON [PRIMARY];
+GO
+
+-- RequestAttachment (attachments metadata)
+-- [REQ 1] [REQ 3.b]
+CREATE TABLE RequestAttachment (
+  AttachmentID INT IDENTITY(1,1) PRIMARY KEY,   -- [REQ 3.b]
+  RequestID     INT NOT NULL,                   -- [REQ 3.b] FK
+  FileName      NVARCHAR(260),
+  FilePath      NVARCHAR(500),
+  UploadedBy    INT NULL,
+  UploadedAt    DATETIME2 DEFAULT SYSUTCDATETIME(),
+  CONSTRAINT FK_RequestAttachment_Request FOREIGN KEY (RequestID) REFERENCES [Request](RequestID),  -- [REQ 3.b]
+  CONSTRAINT FK_RequestAttachment_Employee FOREIGN KEY (UploadedBy) REFERENCES Employee(EmpID)       -- [REQ 3.b]
+) ON [PRIMARY];
+GO
+
+الاكواد هدول هنن لانشاء الطلب التالت  كامل 
+انشاء الجداول والعلاقات بيناتن 
+
+بس نعملن execute  
+منتاكد منن بملف الجداول لازم يطلع الكل 
+
+وبعدا منعمل حركة صغيرة 
+
+data base diagram 
+ منعمل يمين عليها
+new database diagram 
+ بيعطينا متل تنبيه منعمل اووك
+وبعدين منصير نضيف الجداول واحد واحد وبس نعمل اغلاق للمربع اللي طالعلنا 
+بيشتغل الerd  وبيصير كامل متل الصورة اللي بعتتها انا 
+
+هيك الطلب التالت خالص 
+موفقين 
+
