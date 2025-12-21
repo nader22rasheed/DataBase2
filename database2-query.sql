@@ -24,45 +24,45 @@ CREATE DATABASE HW_RequestDB
 ON PRIMARY 
 (
     NAME = N'HW_main', 
-    FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\DATA\HW_main.mdf',
+    FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.SQLEXPRESS\MSSQL\DATA\HW_main.mdf',
     SIZE = 200MB, 
     FILEGROWTH = 20MB
 ),
 (
     NAME = N'HW_file1', 
-    FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\DATA\HW_file1.ndf',
+    FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.SQLEXPRESS\MSSQL\DATA\HW_file1.ndf',
     SIZE = 100MB, 
     FILEGROWTH = 20MB
 ),
 (
     NAME = N'HW_file2', 
-    FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\DATA\HW_file2.ndf',
+    FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.SQLEXPRESS\MSSQL\DATA\HW_file2.ndf',
     SIZE = 100MB, 
     FILEGROWTH = 20MB
 ),
 FILEGROUP [HW_FileGroup] 
 (
     NAME = N'HW_file3',
-    FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\DATA\HW_file3.ndf',
+    FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.SQLEXPRESS\MSSQL\DATA\HW_file3.ndf',
     SIZE = 100MB,
     FILEGROWTH = 20MB
 ),
 (
     NAME = N'HW_file4',
-    FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\DATA\HW_file4.ndf',
+    FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.SQLEXPRESS\MSSQL\DATA\HW_file4.ndf',
     SIZE = 100MB,
     FILEGROWTH = 20MB
 )
 LOG ON
 (
     NAME = N'HW_log1',
-    FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\Log\HW_log1.ldf',
+    FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.SQLEXPRESS\MSSQL\Log\HW_log1.ldf',
     SIZE = 100MB,
     FILEGROWTH = 50MB
 ),
 (
     NAME = N'HW_log2',
-    FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\Log\HW_log2.ldf',
+    FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.SQLEXPRESS\MSSQL\Log\HW_log2.ldf',
     SIZE = 100MB,
     FILEGROWTH = 50MB
 );
